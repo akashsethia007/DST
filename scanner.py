@@ -1,4 +1,5 @@
 """
+python d:\Kiro\DST\scanner.py
 Daily NSE 3% Momentum Stock Scanner
 ====================================
 Run:  python scanner.py
@@ -534,5 +535,5 @@ def git_push():
 
 if __name__ == "__main__":
     git_sync()
-    #main()
+    main()
     git_push()
