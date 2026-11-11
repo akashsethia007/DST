@@ -1,5 +1,5 @@
 """
-python d:\Kiro\DST\scanner.py
+# python d:\Kiro\DST\scanner.py
 Daily NSE 3% Momentum Stock Scanner
 ====================================
 Run:  python scanner.py
@@ -471,7 +471,7 @@ def main():
 
     # 4. Rank
     df_out = pd.DataFrame(rows)
-    df_out.sort_values("TechScore", ascending=False, inplace=True)
+    df_out.sort_values("Hist_Prob_3%", ascending=False, inplace=True)
     df_out = df_out.head(TOP_N).reset_index(drop=True)
     df_out["Rank"] = df_out.index + 1
 
