@@ -41,10 +41,11 @@ INTRADAY_DAYS    = 59          # yfinance caps 1h history at ~60 days
 MAX_WORKERS      = 10          # reduced threads
 BATCH_SIZE       = 50
 
-ROOT    = Path(__file__).parent
-DT      = datetime.today().strftime("%Y%m%d")
-OUT_CSV = ROOT / f"results_{DT}.csv"
-OUT_XLS = ROOT / f"results_{DT}.xlsx"
+ROOT        = Path(__file__).parent
+DT          = datetime.today().strftime("%Y%m%d")
+RESULTS_DIR = ROOT / "results" / DT        # dated subfolder e.g. results/20261111/
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+OUT_CSV     = RESULTS_DIR / f"scanner_{DT}.csv"
 
 # ---------------------------------------------------------------------------
 # STEP 1: Get NSE universe
@@ -498,8 +499,7 @@ def main():
     ]
     df_out = df_out[col_order]
     df_out.to_csv(OUT_CSV, index=False)
-
-    # 8. Print summary
+    print(f"\n  Saved: {OUT_CSV}\n")
     print(f"\n{'='*60}")
     print(f"  TOP {len(df_out)} STOCKS  |  {datetime.today().strftime('%d-%b-%Y')}")
     print(f"{'='*60}")
@@ -513,8 +513,8 @@ def main():
     if not top5.empty:
         print(f"  TOP 5 CANDIDATES      : {', '.join(top5['Symbol'].tolist())}")
     print(f"{'='*60}")
-    print(f"\n  Saved: {OUT_CSV}")
-    print(f"  Saved: {OUT_XLS}\n")
+    print(f"\n  Saved: {OUT_CSV}\n")
+    print(f"  Folder: {RESULTS_DIR}\n")
 
 
 def git_sync():
@@ -534,5 +534,5 @@ def git_push():
 
 if __name__ == "__main__":
     git_sync()
-    main()
+    #main()
     git_push()
