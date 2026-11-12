@@ -33,7 +33,7 @@ for _n in ("yfinance", "peewee", "urllib3"):
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
-TOP_N            = 20          # keep only ~20 high-prob stocks
+TOP_N            = 30          # keep only ~20 high-prob stocks
 MIN_AVG_VALUE    = 20_00_00_000  # min 2 Cr avg daily traded value
 MIN_PRICE        = 50           # min price in Rs
 MAX_PRICE        = 50_000       # max price
