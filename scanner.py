@@ -55,27 +55,35 @@ OUT_CSV     = RESULTS_DIR / f"scanner_{DT}.csv"
 # STEP 1: Get NSE universe
 # ---------------------------------------------------------------------------
 def get_universe() -> list[str]:
-    """Return Nifty 500 tickers only — lightweight universe."""
-    print("Fetching Nifty 500 universe...")
+    """Return top 1000 NSE tickers by market cap using nselib."""
+    print("Fetching NSE universe (top 1000)...")
     try:
-        url = "https://archives.nseindia.com/content/indices/ind_nifty500list.csv"
-        df = pd.read_csv(url)
-        symbols = (df["Symbol"] + ".NS").tolist()
+        from nselib import capital_market
+        eq = capital_market.equity_list()
+        symbols = (eq["SYMBOL"] + ".NS").tolist()
         print(f"  {len(symbols)} symbols loaded")
-        return symbols
+        return symbols[:1000]
     except Exception as e:
-        print(f"  NSE fetch failed ({e}), using Nifty 50 fallback")
-        nifty50 = [
-            "RELIANCE","TCS","HDFCBANK","INFY","ICICIBANK","HINDUNILVR","ITC",
-            "SBIN","BHARTIARTL","KOTAKBANK","LT","AXISBANK","ASIANPAINT","MARUTI",
-            "SUNPHARMA","TITAN","BAJFINANCE","NESTLEIND","WIPRO","ULTRACEMCO",
-            "POWERGRID","NTPC","ONGC","TECHM","ADANIENT","HCLTECH","JSWSTEEL",
-            "TATAMOTORS","TATASTEEL","M&M","INDUSINDBK","BAJAJ-AUTO","GRASIM",
-            "DRREDDY","CIPLA","DIVISLAB","APOLLOHOSP","EICHERMOT","HEROMOTOCO",
-            "BPCL","COALINDIA","TATACONSUM","HINDALCO","ADANIPORTS","SBILIFE",
-            "BRITANNIA","HDFCLIFE","UPL","SHREECEM","BAJAJFINSV",
-        ]
-        return [s + ".NS" for s in nifty50]
+        print(f"  nselib failed ({e}), trying Nifty 500 fallback...")
+        try:
+            url = "https://archives.nseindia.com/content/indices/ind_nifty500list.csv"
+            df = pd.read_csv(url)
+            symbols = (df["Symbol"] + ".NS").tolist()
+            print(f"  {len(symbols)} symbols loaded from NSE")
+            return symbols
+        except Exception as e2:
+            print(f"  NSE fetch also failed ({e2}), using Nifty 50 fallback")
+            nifty50 = [
+                "RELIANCE","TCS","HDFCBANK","INFY","ICICIBANK","HINDUNILVR","ITC",
+                "SBIN","BHARTIARTL","KOTAKBANK","LT","AXISBANK","ASIANPAINT","MARUTI",
+                "SUNPHARMA","TITAN","BAJFINANCE","NESTLEIND","WIPRO","ULTRACEMCO",
+                "POWERGRID","NTPC","ONGC","TECHM","ADANIENT","HCLTECH","JSWSTEEL",
+                "TATAMOTORS","TATASTEEL","M&M","INDUSINDBK","BAJAJ-AUTO","GRASIM",
+                "DRREDDY","CIPLA","DIVISLAB","APOLLOHOSP","EICHERMOT","HEROMOTOCO",
+                "BPCL","COALINDIA","TATACONSUM","HINDALCO","ADANIPORTS","SBILIFE",
+                "BRITANNIA","HDFCLIFE","UPL","SHREECEM","BAJAJFINSV",
+            ]
+            return [s + ".NS" for s in nifty50]
 
 
 # ---------------------------------------------------------------------------
