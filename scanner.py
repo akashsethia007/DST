@@ -33,14 +33,14 @@ for _n in ("yfinance", "peewee", "urllib3"):
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
-TOP_N            = 30          # keep only ~20 high-prob stocks
-MIN_AVG_VALUE    = 20_00_00_000  # min 2 Cr avg daily traded value
-MIN_PRICE        = 50           # min price in Rs
-MAX_PRICE        = 50_000       # max price
-MIN_PROB_3PCT    = 10.0         # >= 10% historical prob of +3%
-MIN_SAMPLE_SIZE  = 30           # at least 30 trading days
-MIN_ATR_PCT      = 1.5          # ATR must support movement
-MIN_REL_VOL      = 0.5          # minimum relative volume
+TOP_N            = 20          # keep only ~20 high-prob stocks
+MIN_AVG_VALUE    = 10_00_00_000 # min 10 Cr avg daily traded value
+MIN_PRICE        = 50          # min price in Rs
+MAX_PRICE        = 50_000      # max price
+MIN_PROB_3PCT    = 25.0        # must have >= 25% historical prob of +3%
+MIN_SAMPLE_SIZE  = 60          # need at least 60 trading days of history
+MIN_ATR_PCT      = 2.5         # ATR must support a 3% move
+MIN_REL_VOL      = 0.8         # minimum relative volume
 HISTORY_YEARS    = 1
 MAX_WORKERS      = 10
 BATCH_SIZE       = 50
