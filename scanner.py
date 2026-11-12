@@ -33,18 +33,21 @@ for _n in ("yfinance", "peewee", "urllib3"):
 # ---------------------------------------------------------------------------
 # CONFIG
 # ---------------------------------------------------------------------------
-TOP_N            = 50          # stocks to output
-MIN_AVG_VALUE    = 5_00_00_000 # min 5 Cr avg daily traded value (liquidity filter)
-MIN_PRICE        = 20          # min price in Rs
+TOP_N            = 20          # keep only ~20 high-prob stocks
+MIN_AVG_VALUE    = 10_00_00_000 # min 10 Cr avg daily traded value (stricter liquidity)
+MIN_PRICE        = 50          # min price in Rs (filter penny stocks)
 MAX_PRICE        = 50_000      # max price
-HISTORY_YEARS    = 1           # reduced: 1yr of daily history
-INTRADAY_DAYS    = 59          # yfinance caps 1h history at ~60 days
-MAX_WORKERS      = 10          # reduced threads
+MIN_PROB_3PCT    = 25.0        # must have >= 25% historical prob of +3%
+MIN_SAMPLE_SIZE  = 60          # need at least 60 trading days of history
+MIN_ATR_PCT      = 2.5         # ATR must support a 3% move
+MIN_REL_VOL      = 0.8         # minimum relative volume
+HISTORY_YEARS    = 1           # 1yr of daily history
+MAX_WORKERS      = 10
 BATCH_SIZE       = 50
 
 ROOT        = Path(__file__).parent
 DT          = datetime.today().strftime("%Y%m%d")
-RESULTS_DIR = ROOT / "results" / DT        # dated subfolder e.g. results/20261111/
+RESULTS_DIR = ROOT / "results"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 OUT_CSV     = RESULTS_DIR / f"scanner_{DT}.csv"
 
@@ -379,13 +382,30 @@ def score_stock(ind: dict, prob: dict) -> float:
 # ---------------------------------------------------------------------------
 # STEP 6: Filters
 # ---------------------------------------------------------------------------
-def passes_filters(ticker: str, ind: dict) -> bool:
+def passes_filters(ticker: str, ind: dict, prob: dict) -> bool:
+    """Strict noise filters — only keep genuinely high-probability stocks."""
     c = ind.get("close", 0)
+    # Price range
     if c < MIN_PRICE or c > MAX_PRICE:
         return False
+    # Liquidity
     if ind.get("avg_value_20", 0) < MIN_AVG_VALUE:
         return False
-    if ind.get("rel_vol", 0) < 0.5:
+    # Volume activity
+    if ind.get("rel_vol", 0) < MIN_REL_VOL:
+        return False
+    # ATR must be large enough to plausibly make a 3% move
+    if ind.get("atr_pct", 0) < MIN_ATR_PCT:
+        return False
+    # Must have sufficient historical sample
+    if prob.get("sample_size", 0) < MIN_SAMPLE_SIZE:
+        return False
+    # Core filter: historical probability of +3% must meet threshold
+    if prob.get("prob_3pct", 0) < MIN_PROB_3PCT:
+        return False
+    # RSI not overbought or oversold
+    rsi = ind.get("rsi", 50)
+    if rsi < 40 or rsi > 85:
         return False
     return True
 
@@ -432,9 +452,9 @@ def main():
         ind  = compute_indicators(df)
         if ind is None:
             continue
-        if not passes_filters(ticker, ind):
-            continue
         prob = historical_probability(df)
+        if not passes_filters(ticker, ind, prob):
+            continue
         sc   = score_stock(ind, prob)
         sym  = ticker.replace(".NS", "")
         entry  = ind["close"]
@@ -515,7 +535,6 @@ def main():
         print(f"  TOP 5 CANDIDATES      : {', '.join(top5['Symbol'].tolist())}")
     print(f"{'='*60}")
     print(f"\n  Saved: {OUT_CSV}\n")
-    print(f"  Folder: {RESULTS_DIR}\n")
 
 
 def git_sync():
